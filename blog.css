@@ -1,0 +1,91 @@
+/* =====================================================================
+   SkyBrain — blog.css · Knowledge & Blog styles (independent from game)
+   ===================================================================== */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#e9edff;--dim:#9aa6d8;--faint:#5d689c;
+  --cy:#5fd9ff;--vi:#a78bfa;--gd:#ffd166;
+  --line:rgba(150,170,255,.18);
+}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;color:var(--ink);
+  font-family:ui-rounded,"Avenir Next","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  background:
+    radial-gradient(120% 90% at 50% -20%,#131a3e 0%,#070a1c 55%,#03040a 100%) fixed;
+}
+/* faux starfield */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;opacity:.5;
+  background-image:
+    radial-gradient(1px 1px at 12% 18%,#cdd6ff 50%,transparent 51%),
+    radial-gradient(1.4px 1.4px at 68% 8%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 84% 32%,#cdd6ff 50%,transparent 51%),
+    radial-gradient(1.2px 1.2px at 30% 60%,#a9b8ff 50%,transparent 51%),
+    radial-gradient(1px 1px at 55% 82%,#cdd6ff 50%,transparent 51%),
+    radial-gradient(1.6px 1.6px at 92% 70%,#fff 50%,transparent 51%),
+    radial-gradient(1px 1px at 8% 88%,#a9b8ff 50%,transparent 51%);
+}
+.bWrap{max-width:760px;margin:0 auto;padding:26px 18px 80px;position:relative}
+header.bHead{text-align:center;padding:26px 0 8px}
+.bLogo{
+  font-size:clamp(24px,6vw,36px);font-weight:900;letter-spacing:.3em;text-indent:.3em;
+  background:linear-gradient(90deg,#9fd8ff,#c9b8ff,#ff9ad5);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 24px rgba(150,120,255,.5));
+}
+.bSub{color:var(--dim);font-size:13px;letter-spacing:.22em;margin-top:8px;text-transform:uppercase}
+.bPlay{
+  display:inline-flex;align-items:center;gap:8px;margin-top:18px;
+  background:linear-gradient(180deg,#8f6bff,#5b3fd6);color:#fff;text-decoration:none;
+  border:1px solid rgba(200,180,255,.55);border-radius:14px;padding:11px 22px;
+  font-weight:800;font-size:13px;letter-spacing:.12em;
+  box-shadow:0 8px 28px rgba(124,92,255,.4);
+}
+.bPlay:active{transform:scale(.97)}
+
+#bCats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:26px 0 18px}
+.bCat{
+  border:1px solid var(--line);background:rgba(20,26,54,.5);color:var(--dim);
+  border-radius:999px;padding:8px 16px;font-size:11px;font-weight:800;letter-spacing:.14em;
+  cursor:pointer;font-family:inherit;
+}
+.bCat.on{color:#fff;background:rgba(110,90,220,.45);border-color:rgba(180,160,255,.5)}
+
+#bList{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:640px){#bList{grid-template-columns:1fr 1fr}}
+.bCard{
+  display:block;text-decoration:none;color:var(--ink);
+  background:linear-gradient(180deg,rgba(30,38,84,.55),rgba(14,18,42,.75));
+  border:1px solid var(--line);border-radius:20px;padding:20px;
+  transition:transform .15s,border-color .2s;
+}
+.bCard:hover{transform:translateY(-3px);border-color:rgba(160,180,255,.4)}
+.bIcon{font-size:30px;margin-bottom:10px;filter:drop-shadow(0 0 14px rgba(150,120,255,.6))}
+.bMeta{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.bTag{
+  font-size:9.5px;font-weight:800;letter-spacing:.2em;color:var(--cy);
+  border:1px solid rgba(95,217,255,.35);border-radius:999px;padding:3px 9px;
+}
+.bDate{font-size:11px;color:var(--faint)}
+.bCard h3{font-size:16px;letter-spacing:.04em;margin-bottom:6px;line-height:1.35}
+.bCard p{font-size:13px;color:var(--dim);line-height:1.55}
+.bMore{display:inline-block;margin-top:12px;font-size:10px;font-weight:800;letter-spacing:.22em;color:var(--vi)}
+
+#bArticle{display:none;background:linear-gradient(180deg,rgba(24,30,64,.55),rgba(12,15,36,.8));
+  border:1px solid var(--line);border-radius:24px;padding:28px 24px 34px}
+.bArtIcon{font-size:40px;margin:14px 0 6px;filter:drop-shadow(0 0 18px rgba(150,120,255,.7))}
+#bArticle h1{font-size:clamp(20px,5vw,28px);letter-spacing:.05em;line-height:1.3;margin-bottom:18px}
+.bBody p{font-size:14.5px;line-height:1.8;color:#cfd7ff;margin-bottom:14px}
+.bBody h2{
+  font-size:13px;letter-spacing:.26em;color:var(--gd);text-transform:uppercase;
+  margin:24px 0 10px;font-weight:800;
+}
+.bBody ul{margin:0 0 14px 20px}
+.bBody li{font-size:14.5px;line-height:1.8;color:#cfd7ff;margin-bottom:4px}
+.bBack{
+  display:inline-block;font-size:11px;font-weight:800;letter-spacing:.2em;color:var(--cy);
+  text-decoration:none;margin:6px 0 10px;
+}
+footer.bFoot{text-align:center;color:var(--faint);font-size:11px;letter-spacing:.14em;margin-top:44px;line-height:1.9}
+footer.bFoot a{color:var(--dim)}

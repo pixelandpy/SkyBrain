@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>SkyBrain — Explore a Universe Powered by Your Mind</title>
+<meta name="description" content="SkyBrain: pilot your ship through a living brain-universe. Follow strange signals, decode anomalies, train your mind and uncover the story of the Core.">
+<meta name="theme-color" content="#070a1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SkyBrain">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/universe.css">
+</head>
+<body>
+<canvas id="space"></canvas>
+<div id="ui">
+
+  <!-- ===== HUD ===== -->
+  <div id="hud">
+    <div class="hudTop">
+      <button id="hudLevel" class="pill live" aria-label="Open profile">
+        <span id="hudAvatar">🧠</span><b id="hudLvl">LV 1</b>
+        <span class="xpwrap"><i id="xpFill"></i></span>
+      </button>
+      <div class="hudRight">
+        <button class="pill live" id="pillEnergy" aria-label="Open shipyard">⚡<b id="hudEnergy">100%</b><span class="xpwrap ewrap"><i id="hudEnergyFill"></i></span></button>
+        <button class="pill live" id="pillStreak" aria-label="Open achievements">🔥<b id="hudStreak">0</b></button>
+        <button class="pill live" id="pillCoins" aria-label="Open shop">🪙<b id="hudCoins">0</b></button>
+      </div>
+    </div>
+    <div id="hintChip" class="hidden">🚀 THRUSTERS TO FLY — HOLD ⚡ BOOST FOR SPEED</div>
+    <div id="signalChip" class="hidden">📡 UNKNOWN SIGNAL DETECTED — FOLLOW IT</div>
+    <div id="travelChip" class="hidden"></div>
+    <nav id="dock" aria-label="Game menu">
+      <button class="dockBtn live" id="dockPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7 4.8v14.4L19.2 12z"/></svg></button>
+      <button class="dockBtn live" id="dockMap" aria-label="Star map and shipyard"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M12 2.6v4M12 17.4v4M2.6 12h4M17.4 12h4"/><circle cx="12" cy="12" r="8.4" stroke-dasharray="3 3"/></svg></button>
+      <button class="dockBtn live" id="dockAwards" aria-label="Achievements, missions and archive"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/></svg></button>
+      <button class="dockBtn live" id="dockProfile" aria-label="Profile and shop"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/></svg></button>
+      <button class="dockBtn live" id="dockSettings" aria-label="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg></button>
+    </nav>
+  </div>
+
+  <!-- ===== SPACECRAFT CONTROLS (primary flight input) ===== -->
+  <div id="shipControls" class="hidden" aria-label="Spacecraft controls">
+    <div class="scPad scPadLeft">
+      <button class="scBtn scRotL live" id="ctrlLeft" aria-label="Rotate left">◀</button>
+      <button class="scBtn scRotR live" id="ctrlRight" aria-label="Rotate right">▶</button>
+    </div>
+    <div class="scPad scPadRight">
+      <button class="scBtn scBoost live" id="ctrlBoost" aria-label="Boost">⚡</button>
+      <button class="scBtn scFwd live" id="ctrlFwd" aria-label="Thrust forward">▲</button>
+      <button class="scBtn scStop live" id="ctrlStop" aria-label="Full stop">■</button>
+      <button class="scBtn scRev live" id="ctrlRev" aria-label="Reverse / brake">▼</button>
+    </div>
+  </div>
+
+  <!-- ===== FLIGHT TRAINING (first-run control onboarding) ===== -->
+  <div id="flightTut" class="hidden">
+    <div class="ftKicker">FLIGHT TRAINING · STEP <span id="ftStep">1</span>/7</div>
+    <p id="ftText" class="ftText"></p>
+    <div class="ftBtns">
+      <button class="miniBtn hidden" id="ftNext">CONTINUE ▸</button>
+      <button class="miniBtn ghost" id="ftSkip">SKIP</button>
+    </div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+  <div id="scrim"></div>
+
+  <!-- ===== SHEETS ===== -->
+  <section class="sheet" id="sheetPlay" aria-label="Play">
+    <div class="handle"></div><h2 class="shTitle">CHOOSE YOUR MISSION</h2>
+    <button class="modeCard" id="modeDaily">
+      <div class="mcIcon">✦</div>
+      <div><b>DAILY CHALLENGE</b><span id="mcDailySub">#000 · 6 stages · ~4 min</span></div>
+      <span class="mcTag" id="mcDailyTag">READY</span>
+    </button>
+    <button class="modeCard" id="modeRift">
+      <div class="mcIcon">🌀</div>
+      <div><b>ENDLESS RIFT</b><span>Endless levels · 3 lives · one run</span></div>
+      <span class="mcTag" id="mcRiftTag">BEST LV 0</span>
+    </button>
+    <button class="modeCard" id="modeExplore">
+      <div class="mcIcon">🛸</div>
+      <div><b>FREE EXPLORATION</b><span>Fly the void · follow signals · decode anomalies</span></div>
+      <span class="mcTag" id="mcExpTag">OPEN</span>
+    </button>
+    <button class="modeCard" id="modeSurvey">
+      <div class="mcIcon">🗺️</div>
+      <div><b>DEEP SKY SURVEY</b><span>Warp to real stars &amp; uncharted systems · light-years out</span></div>
+      <span class="mcTag" id="mcMapTag">STAR MAP</span>
+    </button>
+    <button class="modeCard" id="modeExped">
+      <div class="mcIcon">🚀</div>
+      <div><b>EXPEDITION</b><span>A chained mini-adventure · 2–4 waypoints · ~5–10 min</span></div>
+      <span class="mcTag" id="mcExpedTag">PLOT COURSE</span>
+    </button>
+    <p class="finePrint">The Daily Challenge is the same for every player today.<br>Your official attempt counts once — practice freely after.</p>
+  </section>
+
+  <section class="sheet" id="sheetPlanet" aria-label="Planet"><div class="handle"></div><div id="plBody"></div></section>
+  <section class="sheet" id="sheetMap" aria-label="Star map"><div class="handle"></div><div id="mapBody"></div></section>
+  <section class="sheet" id="sheetYard" aria-label="Shipyard"><div class="handle"></div><div id="yardBody"></div></section>
+  <section class="sheet" id="sheetCore" aria-label="Daily challenge"><div class="handle"></div><div id="coreBody"></div></section>
+  <section class="sheet" id="sheetRift" aria-label="Endless rift"><div class="handle"></div><div id="riftBody"></div></section>
+
+  <section class="sheet" id="sheetAwards" aria-label="Achievements, missions and cosmic archive">
+    <div class="handle"></div><h2 class="shTitle">MIND HALL</h2>
+    <div class="tabs">
+      <button class="tab on" data-tab="ach">🏆 AWARDS</button>
+      <button class="tab" data-tab="mis">📜 MISSIONS</button>
+      <button class="tab" data-tab="arc">📡 ARCHIVE</button>
+    </div>
+    <div class="tabPane on" id="tabAch"><div class="achGrid" id="achGrid"></div></div>
+    <div class="tabPane" id="tabMis"><div id="misList"></div></div>
+    <div class="tabPane" id="tabArc"><div id="arcList"></div></div>
+  </section>
+
+  <section class="sheet" id="sheetProfile" aria-label="Profile">
+    <div class="handle"></div><h2 class="shTitle">NEURONAUT</h2>
+    <div class="pfCard">
+      <div class="pfAvatar" id="pfAvatar">🧠</div>
+      <div>
+        <div class="pfName" id="pfTitle">VOID DRIFTER</div>
+        <div class="pfLvl" id="pfLvl">BRAIN LEVEL 1</div>
+        <div class="pfXp"><i id="pfXpFill"></i></div>
+      </div>
+    </div>
+    <div class="pfStats" id="pfStats"></div>
+    <div class="tabs" id="shopTabs">
+      <button class="tab on" data-shop="avatars">🧠</button>
+      <button class="tab" data-shop="titles">🏷️</button>
+      <button class="tab" data-shop="themes">🌌</button>
+      <button class="tab" data-shop="auras">✨</button>
+    </div>
+    <div class="shopGrid" id="shopGrid"></div>
+  </section>
+
+  <section class="sheet" id="sheetSettings" aria-label="Settings">
+    <div class="handle"></div><h2 class="shTitle">SETTINGS</h2>
+    <label class="tgl"><span>🔊 Sound effects</span><input type="checkbox" id="setSound"><i></i></label>
+    <label class="volRow" id="rowSfxVol"><span>🔊 Effects volume</span><input type="range" id="setSfxVol" min="0" max="100" step="1"><b id="setSfxVolNum">100</b></label>
+    <label class="tgl"><span>🎵 Space music</span><input type="checkbox" id="setMusic"><i></i></label>
+    <label class="volRow" id="rowMusicVol"><span>🎵 Music volume</span><input type="range" id="setMusicVol" min="0" max="100" step="1"><b id="setMusicVolNum">100</b></label>
+    <label class="tgl"><span>✨ Full animations</span><input type="checkbox" id="setMotion"><i></i></label>
+    <label class="tgl"><span>📳 Haptic feedback</span><input type="checkbox" id="setHaptics"><i></i></label>
+    <button class="btn ghost big" id="btnReplayTutorial" style="margin-top:8px">🚀 REPLAY FLIGHT TRAINING</button>
+    <div class="saveIoRow">
+      <button class="btn ghost" id="btnExportSave">⬆ EXPORT SAVE</button>
+      <button class="btn ghost" id="btnImportSave">⬇ IMPORT SAVE</button>
+    </div>
+    <a class="btn ghost big live" href="blog.html" style="margin-top:8px;text-decoration:none">📖 KNOWLEDGE &amp; BLOG</a>
+    <button class="btn ghost big" id="btnReset" style="margin-top:8px">RESET ALL PROGRESS</button>
+    <p class="aboutTxt">SKYBRAIN v2.4 “DEEP SKY” — a living universe powered by your mind.<br>
+    Pilot your ship, follow strange signals, decode the story of the Core.<br>
+    Made with stardust &amp; synapses. No account. No server. Your progress lives on this device.</p>
+  </section>
+
+  <!-- ===== SAVE EXPORT ===== -->
+  <div class="cOverlay hidden" id="exportOverlay">
+    <div class="card">
+      <h3>YOUR SAVE CODE</h3>
+      <p class="ioHint">This code is your backup. Copy it somewhere safe (notes app, email to yourself) — anyone with this code can restore this exact progress.</p>
+      <textarea class="ioArea" id="exportArea" readonly rows="6"></textarea>
+      <div class="cfBtns">
+        <button class="btn ghost" id="exportClose">CLOSE</button>
+        <button class="btn primary" id="exportCopy">COPY CODE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SAVE IMPORT ===== -->
+  <div class="cOverlay hidden" id="importOverlay">
+    <div class="card">
+      <h3>IMPORT SAVE CODE</h3>
+      <p class="ioHint">Paste a save code exported from SkyBrain. This will <b>replace</b> your current progress — you'll be asked to confirm first.</p>
+      <textarea class="ioArea" id="importArea" rows="6" placeholder="SKYBRAIN1:…"></textarea>
+      <p class="ioError hidden" id="importError"></p>
+      <div class="cfBtns">
+        <button class="btn ghost" id="importClose">CANCEL</button>
+        <button class="btn primary" id="importGo">IMPORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DISCOVERY CINEMATIC ===== -->
+  <div id="discover">
+    <div class="discInner">
+      <div class="discKicker" id="discKicker">NEW WORLD DISCOVERED</div>
+      <div class="discIcon" id="discIcon">🪐</div>
+      <div class="discName" id="discName">LOGIC PLANET</div>
+      <div class="discDesc" id="discDesc">Your mind has reached a new level.</div>
+      <div class="discBtns">
+        <button class="btn primary live" id="discEnter">ENTER PLANET</button>
+        <button class="btn ghost live" id="discOk">CONTINUE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LORE REVEAL ===== -->
+  <div class="cOverlay hidden" id="lore">
+    <div class="card loreCard">
+      <div class="discKicker">SIGNAL DECODED — ARCHIVE UPDATED</div>
+      <div class="loreIcon" id="loreIcon">📡</div>
+      <h3 id="loreTitle">FRAGMENT 01</h3>
+      <p id="loreText" class="loreText"></p>
+      <button class="btn primary" id="loreOk">STORE IN COSMIC ARCHIVE</button>
+    </div>
+  </div>
+
+  <!-- ===== GAME SHELL ===== -->
+  <div id="game">
+    <header id="gTop">
+      <div id="gStage">STAGE 1/6 · MEMORY</div>
+      <div id="gLives" class="hidden">❤️❤️❤️</div>
+      <div class="gTopR"><b id="gScore">0</b><button class="xbtn live" id="gExit" aria-label="Leave session">✕</button></div>
+    </header>
+    <div id="gTimer"><i id="gTimerFill"></i></div>
+    <div id="gPrompt"></div>
+    <div id="gCombo">COMBO ×2</div>
+    <div id="gArea"></div>
+    <div class="gOverlay" id="stageIntro"></div>
+    <div class="gOverlay hidden" id="countdown"></div>
+    <div class="gOverlay hidden" id="splash"></div>
+  </div>
+
+  <!-- ===== RESULTS ===== -->
+  <div class="cOverlay hidden" id="results">
+    <div class="card">
+      <div class="rMode" id="rMode">DAILY CHALLENGE #257</div>
+      <div><span id="rPracticeTag" class="rPracticeTag hidden">PRACTICE — OFFICIAL SCORE UNAFFECTED</span><span id="rNew" class="hidden">★ NEW BEST ★</span></div>
+      <div class="rScore" id="rScore">0</div>
+      <div class="rStars" id="rStars"><span>★</span><span>★</span><span>★</span></div>
+      <div class="rBars" id="rBars"></div>
+      <div class="rr"><span style="color:var(--cy)">＋<b id="rXP">0</b> XP</span><span class="bar"><i id="rXpFill"></i></span><span class="lvTag" id="rLvlTag">LV 1</span></div>
+      <div class="rr"><span>🪙 ＋<b id="rCoins">0</b></span><button class="miniBtn hidden" id="rDouble">▶ DOUBLE WITH AD</button></div>
+      <div class="rr" id="rStreakRow"><span>🔥 <b id="rStreak">1</b> DAY STREAK</span></div>
+      <div id="rAch"></div>
+      <div class="rBtns">
+        <button class="btn primary" id="rAgain">PLAY AGAIN</button>
+        <button class="btn ghost" id="rHome">RETURN TO UNIVERSE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIRM ===== -->
+  <div class="cOverlay hidden" id="confirm" style="z-index:80">
+    <div class="card">
+      <h3 id="cfTitle">ARE YOU SURE?</h3>
+      <p id="cfText"></p>
+      <div class="cfBtns"><button class="btn ghost" id="cfNo">CANCEL</button><button class="btn primary" id="cfOk">CONFIRM</button></div>
+    </div>
+  </div>
+
+  <!-- ===== AD SURFACE (integration point) ===== -->
+  <div class="cOverlay hidden" id="adOverlay" style="z-index:85">
+    <div class="card adCard">
+      <span class="adBadge">AD BREAK</span>
+      <h3 id="adTitle">SPONSORED MOMENT</h3>
+      <p id="adBody">This surface is reserved for a real ad network integration.</p>
+      <button class="btn ghost" id="adClose">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ===== SIGNAL LOST ===== -->
+  <div class="cOverlay hidden" id="signal" style="z-index:90">
+    <div class="scanline"></div>
+    <div class="card signalCard">
+      <div class="sigIcon">📡</div>
+      <h2>SIGNAL LOST</h2>
+      <p>SkyBrain drifts beyond reach without an<br>internet connection.<br><span style="color:var(--faint);font-size:12px">Your progress is safe on this device.</span></p>
+      <button class="btn primary big" id="sigRetry">TRY AGAIN</button>
+    </div>
+  </div>
+
+  <!-- ===== INTRO ===== -->
+  <div class="cOverlay hidden" id="intro">
+    <div class="introInner">
+      <h1 class="introTitle">SKYBRAIN</h1>
+      <p class="introTag">“Your mind is bigger than you think.”</p>
+      <button class="btn primary" id="introBegin">BEGIN</button>
+    </div>
+  </div>
+  <div id="introFade"></div>
+
+</div>
+
+<!-- Core systems -->
+<script src="js/core/core.js"></script>
+<script src="js/core/audio.js"></script>
+<!-- Data (content is data-driven: planets, cosmetics, achievements, generators, story) -->
+<script src="js/data/content.js"></script>
+<script src="js/data/story.js"></script>
+<script src="js/data/astro.js"></script>
+<!-- Mini-games (each Games.xxx entry is auto-picked-up by the engine) -->
+<script src="js/games/games.js"></script>
+<!-- Engine: challenge selection + session flow -->
+<script src="js/engine/selector.js"></script>
+<script src="js/engine/engine.js"></script>
+<!-- The living universe: canvas scene, camera, spacecraft, anomalies -->
+<script src="js/universe/universe.js"></script>
+<!-- UI layer -->
+<script src="js/ui/ui.js"></script>
+<!-- Meta systems: missions, achievements, discoveries, archive, ship systems -->
+<script src="js/systems/systems.js"></script>
+<script src="js/systems/shipsys.js"></script>
+<script src="js/systems/expedition.js"></script>
+<!-- Boot -->
+<script src="js/boot.js"></script>
+</body>
+</html>
